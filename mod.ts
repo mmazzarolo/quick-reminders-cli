@@ -27,7 +27,7 @@ interface Arguments {
 const program = new Denomander({
   app_name: "Quick Reminders",
   app_description: "Quickly add new reminders to Apple's Reminders app",
-})
+});
 
 program.command("add [text]", "Add a new reminder")
   .option("-l, --list", "The reminder's list")
@@ -44,23 +44,28 @@ async function run() {
   } catch (_err) {
     console.log("_err", _err.message);
     throw new Error(
-      `Reminders CLI doesn't seem to be installed. See https://github.com/keith/reminders-cli.`
+      `Reminders CLI doesn't seem to be installed. See https://github.com/keith/reminders-cli.`,
     );
   }
-
 
   // Get default reminders list.
   // Since the reminders.app API doesn't expose the "default" list, we'll pick
   // the first one available from the list of reminders list (which follows the
   // order set in the Reminder app).
-  const remindersCLIShowListsStdout = await miniexec("reminders show-lists", { printOutput: args.verbose });
+  const remindersCLIShowListsStdout = await miniexec("reminders show-lists", {
+    printOutput: args.verbose,
+  });
   const availableReminderListNames = remindersCLIShowListsStdout.split("\n");
   const defaultReminderListName = availableReminderListNames[0];
   if (!defaultReminderListName) {
     throw new Error("Unable to load reminder lists");
   }
   if (args.list && !availableReminderListNames.includes(args.list)) {
-    throw new Error(`The specified list does not exist: "${args.list}". Available lists: ${availableReminderListNames.join(", ")}`)
+    throw new Error(
+      `The specified list does not exist: "${args.list}". Available lists: ${
+        availableReminderListNames.join(", ")
+      }`,
+    );
   }
   const reminderListName = args.list || defaultReminderListName;
 
@@ -74,21 +79,22 @@ async function run() {
   await miniexec(
     reminderDueDate
       ? `reminders add ${reminderListName} "${reminderText}" --due-date "${reminderDueDate}"`
-      : `reminders add ${reminderListName} "${reminderText}"`
-      , { printOutput: args.verbose });
+      : `reminders add ${reminderListName} "${reminderText}"`,
+    { printOutput: args.verbose },
+  );
   const prettyCheckMark = Colors.green("✔");
   const prettyReminderText = Colors.magenta(reminderText);
   const prettyReminderListName = Colors.magenta(reminderListName);
   if (reminderDueDate) {
     const prettyReminderDueDate = Colors.magenta(
-      format(reminderDueDate, "yyyy-MM-dd HH:mm:ss")
+      format(reminderDueDate, "yyyy-MM-dd HH:mm:ss"),
     );
     console.log(
-      `${prettyCheckMark} Added a new "${prettyReminderText}" reminder to the "${prettyReminderListName}" list with due date ${prettyReminderDueDate}`
+      `${prettyCheckMark} Added a new "${prettyReminderText}" reminder to the "${prettyReminderListName}" list with due date ${prettyReminderDueDate}`,
     );
   } else {
     console.log(
-      `${prettyCheckMark} Added a new "${prettyReminderText}" reminder to the "${prettyReminderListName}"`
+      `${prettyCheckMark} Added a new "${prettyReminderText}" reminder to the "${prettyReminderListName}"`,
     );
   }
 }
