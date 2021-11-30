@@ -1,0 +1,35 @@
+name: Releases
+
+on: 
+  push:
+    tags:
+    - '*'
+
+jobs:
+  build_and_release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Setup repo
+        uses: actions/checkout@v2
+
+      - name: Setup Deno
+        uses: denoland/setup-deno@v1
+        with:
+          deno-version: vx.x.x
+
+      - name: Compile executable
+        run: deno compile --output=quick-reminders-cli --allow-run mod.ts
+
+      - name: Create tar.gz
+        run: tar -czf quick-reminders-cli.tar.gz quick-reminders-cli
+
+      - name: Get tar.gz checksum
+        run: echo "::set-output name=checksum::$(shasum -a 256 quick-reminders-cli.tar.gz)"
+        id: checksum
+
+      - name: Create new release
+        uses: ncipollo/release-action@v1
+        with:
+          artifacts: "quick-reminders-cli.tar.gz,quick-reminders-cli"
+          body: "sha256: `${{ steps.checksum.output.checksum }}`"
+          token: ${{ secrets.GITHUB_TOKEN }}
