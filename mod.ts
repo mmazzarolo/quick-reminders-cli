@@ -29,8 +29,12 @@ async function run() {
   }
 
   // Get input args.
-  if (Deno.args[0] !== 'add') {
-    throw new Error(`Invalid argument: "${Deno.args[0]}". We currently support a single argument: "add".`)
+  if (Deno.args[0] !== "add") {
+    throw new Error(
+      `Invalid argument: "${
+        Deno.args[0]
+      }". We currently support a single argument: "add".`,
+    );
   }
   // For a better UX, we allow writing the entire string without quotes.
   const [_, ...addArgs] = Deno.args;
