@@ -31,5 +31,5 @@ jobs:
         uses: ncipollo/release-action@v1
         with:
           artifacts: "quick-reminders-cli.tar.gz,quick-reminders-cli"
-          body: "sha256: `${{ steps.checksum.output.checksum }}`"
+          body: "sha256: `${{ steps.checksum.outputs.checksum }}`"
           token: ${{ secrets.GITHUB_TOKEN }}
