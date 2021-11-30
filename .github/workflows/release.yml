@@ -18,7 +18,7 @@ jobs:
           deno-version: vx.x.x
 
       - name: Compile executable
-        run: deno compile --output=quick-reminders --allow-run mod.ts
+        run: deno compile --output=quick-reminders --allow-run --target x86_64-apple-darwin mod.ts
 
       - name: Create tar.gz
         run: tar -czf quick-reminders.tar.gz quick-reminders
