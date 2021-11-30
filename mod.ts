@@ -9,78 +9,86 @@
  *
  * Example usage:
  * ```
- * quick-reminders add Doctor appointment in 2 weeks at 5pm
+ * quick-reminders add "Doctor appointment in 2 weeks at 5pm"
  * ```
  */
 import chrono from "https://esm.sh/chrono-node";
+import Denomander from "https://deno.land/x/denomander/mod.ts";
 import { miniexec } from "https://deno.land/x/miniexec/mod.ts";
 import * as Colors from "https://deno.land/std/fmt/colors.ts";
 import { format } from "https://deno.land/std/datetime/mod.ts";
 
+interface Arguments {
+  text: string;
+  list?: string;
+  verbose?: boolean;
+}
+
+const program = new Denomander({
+  app_name: "Quick Reminders",
+  app_description: "Quickly add new reminders to Apple's Reminders app",
+})
+
+program.command("add [text]", "Add a new reminder")
+  .option("-l, --list", "The reminder's list")
+  .option("-v, --verbose", "Show verbose output")
+  .parse(Deno.args);
+
 async function run() {
+  // Get input args.
+  const args = program as unknown as Arguments;
+
   // Ensure reminders-cli is installed.
   try {
-    await miniexec(`reminders`);
+    await miniexec(`reminders`, { printOutput: args.verbose });
   } catch (_err) {
     console.log("_err", _err.message);
     throw new Error(
-      `Reminders CLI doesn't seem to be installed. See https://github.com/keith/reminders-cli.`,
+      `Reminders CLI doesn't seem to be installed. See https://github.com/keith/reminders-cli.`
     );
   }
 
-  // Get input args.
-  if (Deno.args[0] !== "add") {
-    throw new Error(
-      `Invalid argument: "${
-        Deno.args[0]
-      }". We currently support a single argument: "add".`,
-    );
-  }
-  // For a better UX, we allow writing the entire string without quotes.
-  const [_, ...addArgs] = Deno.args;
-  const inputStr = addArgs.join(" ");
-  if (!inputStr) {
-    throw new Error(
-      `Missing input. Example usage: $ quick-reminders add Doctor appointment tomorrow`,
-    );
-  }
 
   // Get default reminders list.
   // Since the reminders.app API doesn't expose the "default" list, we'll pick
   // the first one available from the list of reminders list (which follows the
   // order set in the Reminder app).
-  const remindersCLIShowListsStdout = await miniexec("reminders show-lists");
+  const remindersCLIShowListsStdout = await miniexec("reminders show-lists", { printOutput: args.verbose });
   const availableReminderListNames = remindersCLIShowListsStdout.split("\n");
   const defaultReminderListName = availableReminderListNames[0];
   if (!defaultReminderListName) {
-    throw "Unable to load reminder lists";
+    throw new Error("Unable to load reminder lists");
   }
+  if (args.list && !availableReminderListNames.includes(args.list)) {
+    throw new Error(`The specified list does not exist: "${args.list}". Available lists: ${availableReminderListNames.join(", ")}`)
+  }
+  const reminderListName = args.list || defaultReminderListName;
 
   // Extract the natural-lanaguage date from the input string using chrono-node.
-  const chronoParsingResult = chrono.parse(inputStr)[0];
+  const chronoParsingResult = chrono.parse(args.text)[0];
   const naturalLanguageDueDate = chronoParsingResult?.text || "";
-  const reminderText = inputStr.replace(naturalLanguageDueDate, "").trim();
+  const reminderText = args.text.replace(naturalLanguageDueDate, "").trim();
   const reminderDueDate = chronoParsingResult?.start?.date();
 
   // Use reminders-cli to add the reminder to reminders.app.
   await miniexec(
     reminderDueDate
-      ? `reminders add ${defaultReminderListName} "${reminderText}" --due-date "${reminderDueDate}"`
-      : `reminders add ${defaultReminderListName} "${reminderText}"`,
-  );
+      ? `reminders add ${reminderListName} "${reminderText}" --due-date "${reminderDueDate}"`
+      : `reminders add ${reminderListName} "${reminderText}"`
+      , { printOutput: args.verbose });
   const prettyCheckMark = Colors.green("✔");
   const prettyReminderText = Colors.magenta(reminderText);
-  const prettyReminderListName = Colors.magenta(defaultReminderListName);
+  const prettyReminderListName = Colors.magenta(reminderListName);
   if (reminderDueDate) {
     const prettyReminderDueDate = Colors.magenta(
-      format(reminderDueDate, "yyyy-MM-dd HH:mm:ss"),
+      format(reminderDueDate, "yyyy-MM-dd HH:mm:ss")
     );
     console.log(
-      `${prettyCheckMark} Added a new "${prettyReminderText}" reminder to the "${prettyReminderListName}" list with due date ${prettyReminderDueDate}`,
+      `${prettyCheckMark} Added a new "${prettyReminderText}" reminder to the "${prettyReminderListName}" list with due date ${prettyReminderDueDate}`
     );
   } else {
     console.log(
-      `${prettyCheckMark} Added a new "${prettyReminderText}" reminder to the "${prettyReminderListName}"`,
+      `${prettyCheckMark} Added a new "${prettyReminderText}" reminder to the "${prettyReminderListName}"`
     );
   }
 }
