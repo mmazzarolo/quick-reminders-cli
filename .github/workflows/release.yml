@@ -18,18 +18,18 @@ jobs:
           deno-version: vx.x.x
 
       - name: Compile executable
-        run: deno compile --output=quick-reminders-cli --allow-run mod.ts
+        run: deno compile --output=quick-reminders --allow-run mod.ts
 
       - name: Create tar.gz
-        run: tar -czf quick-reminders-cli.tar.gz quick-reminders-cli
+        run: tar -czf quick-reminders.tar.gz quick-reminders
 
       - name: Get tar.gz checksum
-        run: echo "::set-output name=checksum::$(shasum -a 256 quick-reminders-cli.tar.gz)"
+        run: echo "::set-output name=checksum::$(shasum -a 256 quick-reminders.tar.gz)"
         id: checksum
 
       - name: Create new release
         uses: ncipollo/release-action@v1
         with:
-          artifacts: "quick-reminders-cli.tar.gz,quick-reminders-cli"
+          artifacts: "quick-reminders.tar.gz,quick-reminders"
           body: "sha256: `${{ steps.checksum.outputs.checksum }}`"
           token: ${{ secrets.GITHUB_TOKEN }}

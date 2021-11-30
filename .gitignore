@@ -4,5 +4,7 @@
 *bak
 .history
 .temp/**
+quick-reminders
+quick-reminders.tar.gz
 quick-reminders-cli
 quick-reminders-cli.tar.gz
