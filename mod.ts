@@ -12,11 +12,11 @@
  * quick-reminders add "Doctor appointment in 2 weeks at 5pm"
  * ```
  */
-import chrono from "https://esm.sh/chrono-node";
-import Denomander from "https://deno.land/x/denomander/mod.ts";
-import { miniexec } from "https://deno.land/x/miniexec/mod.ts";
-import * as Colors from "https://deno.land/std/fmt/colors.ts";
-import { format } from "https://deno.land/std/datetime/mod.ts";
+import chrono from "https://esm.sh/chrono-node@2.3.4";
+import Denomander from "https://deno.land/x/denomander@0.9.1/mod.ts";
+import { miniexec } from "https://deno.land/x/miniexec@1.0.0/mod.ts";
+import * as Colors from "https://deno.land/std@0.116.0/fmt/colors.ts";
+import { format } from "https://deno.land/std@0.116.0/datetime/mod.ts";
 
 interface Arguments {
   text: string;
